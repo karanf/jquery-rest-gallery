@@ -12,7 +12,7 @@ jQuery(document).ready(function($) {
     var loadData = function() {
         $.getJSON(dataURL, function(data) {
             dataModel.images = data;
-            dataModel.lastIndex = dataModel.images.length -1;
+            dataModel.lastIndex = dataModel.images.length - 1;
             init();
         });
     };
@@ -26,26 +26,12 @@ jQuery(document).ready(function($) {
 
     var renderThumbsView = function() {
 
-        $thumbsContainer = $('<div>', {
-            'class': 'thumbs clearfix'
-        });
-        var images = dataModel.images,
-            $thumb;
-
-        images.forEach(function(image) {
-            $thumb = $('<img>', {
-                'src': image.medium,
-                'alt': image.caption
-            });
-            $thumbsContainer.append($thumb);
-        });
-
-        $gallery.append($thumbsContainer);
+        $gallery.html(Templates.thumbs(dataModel));
 
     };
 
     var addThumbsController = function() {
-        var $thumbs = $thumbsContainer.find('img');
+        var $thumbs = $gallery.find('img');
 
         $thumbs.on('click', function() {
             dataModel.currentIndex = $thumbs.index($(this));
@@ -55,29 +41,7 @@ jQuery(document).ready(function($) {
     };
 
     var renderOverlayView = function() {
-        $overlay = $('<div>', {
-            'class': 'overlay',
-            'z-index': 9000
-        });
-        var $imageContainer = $('<div>', {
-                'class': 'image-container clearfix'
-            }),
-            $figure = $('<figure>'),
-            $image = $('<img>'),
-            $figCaption = $('<figcaption>'),
-            $close = $('<div>', {
-                'class': 'close-btn fa fa-close'
-            }),
-            $nextBtn = $('<div>', {
-                'class': 'next-btn fa fa-arrow-right'
-            }),
-            $prevBtn = $('<div>', {
-                'class': 'prev-btn fa fa-arrow-left'
-            });
-
-        $figure.append($image, $figCaption, $close, $prevBtn, $nextBtn);
-        $imageContainer.append($figure);
-        $overlay.append($imageContainer);
+        $overlay = $(Templates.overlay(dataModel));
     };
 
     var addOverlayControllers = function() {
@@ -89,38 +53,37 @@ jQuery(document).ready(function($) {
                 removeOverlay();
             }
         });
-        $overlay.find('.next-btn').on('click', function(){
-        	dataModel.currentIndex = dataModel.currentIndex < dataModel.lastIndex? dataModel.currentIndex + 1:0;
-        		loadImage()
+        $overlay.find('.next-btn').on('click', function() {
+            dataModel.currentIndex = dataModel.currentIndex < dataModel.lastIndex ? dataModel.currentIndex + 1 : 0;
+            loadImage()
         });
-        $overlay.find('.prev-btn').on('click', function(){
-        	dataModel.currentIndex = dataModel.currentIndex > 0? dataModel.currentIndex - 1:dataModel.lastIndex;
-        		loadImage()
+        $overlay.find('.prev-btn').on('click', function() {
+            dataModel.currentIndex = dataModel.currentIndex > 0 ? dataModel.currentIndex - 1 : dataModel.lastIndex;
+            loadImage()
         });
     }
 
     var loadImage = function() {
-        var image = dataModel.images[dataModel.currentIndex];
-        $overlay.find('img').css({
-            'opacity': 0
-        }).attr({
-            'src': image.image,
-            'alt': image.caption
-        }).load(function() {
-            $(this).unbind('load').velocity('fadeIn', {
-                duration: 600
-            });
+        var image = dataModel.images[dataModel.currentIndex],
+            $image = $(Templates.image(image));
+        
+        $overlay.find('figure').html(Templates.image(image));
+        $overlay.find('img').css({"opacity": 0}).load(function(){
+            $(this).velocity('fadeIn', {duration: 600});
         });
-        $overlay.find('figcaption').html(image.caption);
     };
 
     var addOverlay = function() {
-        $body.append($overlay).css({'overflow': 'hidden'});
+        $body.append($overlay).css({
+            'overflow': 'hidden'
+        });
     };
 
     var removeOverlay = function() {
         $overlay.detach();
-        $body.css({'overflow': 'scroll'});
+        $body.css({
+            'overflow': 'scroll'
+        });
     };
 
 
